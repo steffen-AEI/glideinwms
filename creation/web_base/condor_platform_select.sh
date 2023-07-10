@@ -52,38 +52,37 @@ findversion_redhat() {
 }
 
 findversion_debian() {
-  #cat /etc/*release
-  #DISTRIB_ID=Ubuntu
-  #DISTRIB_RELEASE=11.10
-  #DISTRIB_CODENAME=oneiric
-  #DISTRIB_DESCRIPTION="Ubuntu 11.10"
+  #cat /etc/os-release
+  #PRETTY_NAME="Debian GNU/Linux 11 (bullseye)"
+  #NAME="Debian GNU/Linux"
+  #VERSION_ID="11"
+  #VERSION="11 (bullseye)"
+  #VERSION_CODENAME=bullseye
+  #ID=debian
+  #HOME_URL="https://www.debian.org/"
+  #SUPPORT_URL="https://www.debian.org/support"
+  #BUG_REPORT_URL="https://bugs.debian.org/"
   #
-  #user@bellatrix:~$ lsb_release
-  #No LSB modules are available.
-  #
-  #user@bellatrix:~$ lsb_release -a
-  #No LSB modules are available.
-  #
-  #Distributor ID:    Ubuntu
-  #Description:    Ubuntu 11.10
-  #Release:    11.10
-  #Codename:    oneiric
+  #NAME="Ubuntu"
+  #VERSION="20.04.6 LTS (Focal Fossa)"
+  #ID=ubuntu
+  #ID_LIKE=debian
+  #PRETTY_NAME="Ubuntu 20.04.6 LTS"
+  #VERSION_ID="20.04"
+  #HOME_URL="https://www.ubuntu.com/"
+  #SUPPORT_URL="https://help.ubuntu.com/"
+  #BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+  #PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+  #VERSION_CODENAME=focal
+  #UBUNTU_CODENAME=focal
 
-  dist_id_line=$(grep "DISTRIB_ID" /etc/lsb-release)
-  dist_rel_line=$(grep "DISTRIB_RELEASE" /etc/lsb-release)
-  if [[ ${dist_id_line} == *"Debian"* ]]; then
-    [[ ${dist_rel_line:16:3} = "11." ]] && condor_os='linux-debian10' && return
-    [[ ${dist_rel_line:16:3} = "10." ]] && condor_os='linux-debian10' && return
-    [[ ${dist_rel_line:16:2} = "9." ]] && condor_os='linux-debian9' && return
-    [[ ${dist_rel_line:16:2} = "8." ]] && condor_os='linux-debian8' && return
-    [[ ${dist_rel_line:16:2} = "7." ]] && condor_os='linux-debian7' && return
-  elif [[ ${dist_id_line} == *"Ubuntu"* ]]; then
-    [[ ${dist_rel_line:16:3} = "22." ]] && condor_os='linux-ubuntu20' && return
-    [[ ${dist_rel_line:16:3} = "20." ]] && condor_os='linux-ubuntu20' && return
-    [[ ${dist_rel_line:16:3} = "18." ]] && condor_os='linux-ubuntu18' && return
-    [[ ${dist_rel_line:16:3} = "16." ]] && condor_os='linux-ubuntu16' && return
-    [[ ${dist_rel_line:16:3} = "14." ]] && condor_os='linux-ubuntu14' && return
-    [[ ${dist_rel_line:16:3} = "12." ]] && condor_os='linux-ubuntu12' && return
+  # source /etc/os-release instead of parsing lines
+  dist_id=$(. /etc/os-release; echo ${ID})
+  dist_rel=$(. /etc/os-release; echo ${VERSION_ID})
+  if [[ ${dist_id} == "debian" ]]; then
+    condor_os="linux-${dist_id}${dist_rel}"
+  elif [[ ${dist_id} == "ubuntu" ]]; then
+    condor_os="linux-${dist_id}${dist_rel:0:2}"
   fi
 }
 
@@ -101,7 +100,7 @@ if [[ "$condor_os" == "auto" ]]; then
 	#    # I am not aware of anything newer right now
 	#    condor_os='linux-rhel5'
 	#fi
-    elif [ -f "/etc/lsb-release" ]; then
+    elif [ -f "/etc/os-release" ]; then
     # debian/ubuntu, now determine the version
         # default debian
         condor_os='linux-debian10'
